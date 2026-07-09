@@ -1,0 +1,71 @@
+function g = medianSFilter(f, w)
+
+if nargin < 2
+    w = [3 3];
+end
+
+% Permite usar w = 3 em vez de [3 3]
+if numel(w) == 1
+    w = [w w];
+end
+
+m = w(1);
+n = w(2);
+
+
+% Converte para double
+f = double(f);
+
+% Se a imagem for RGB, converte manualmente para tons de cinza
+if ndims(f) == 3
+    f = 0.2989*f(:,:,1) + 0.5870*f(:,:,2) + 0.1140*f(:,:,3);
+end
+
+% Escala para [0,1], para facilitar a comparacao visual
+f_min = min(f(:));
+f_max = max(f(:));
+
+if f_max > f_min
+    f = (f - f_min) / (f_max - f_min);
+else
+    f = zeros(size(f));
+end
+
+[M, N] = size(f);
+
+% Quantidade de padding
+r = floor(m/2);
+c = floor(n/2);
+
+% Aplica padding replicado
+fp = imagePad(f, r, c, 'replicate');
+
+% Inicializa imagem de saída
+g = zeros(M, N);
+
+% Posição da mediana dentro do vetor ordenado
+posMediana = floor((m*n)/2) + 1;
+
+% Filtragem de mediana
+for x = 1:M
+    for y = 1:N
+
+        vizinhos = zeros(1, m*n);
+        k = 1;
+
+        % Coleta os pixels da vizinhanca
+        for i = 1:m
+            for j = 1:n
+                vizinhos(k) = fp(x+i-1, y+j-1);
+                k = k + 1;
+            end
+        end
+
+        % Ordena os valores da vizinhanca
+        vizinhosOrdenados = sort(vizinhos);
+
+        % Atribui a mediana ao pixel central
+        g(x,y) = vizinhosOrdenados(posMediana);
+    end
+end
+end

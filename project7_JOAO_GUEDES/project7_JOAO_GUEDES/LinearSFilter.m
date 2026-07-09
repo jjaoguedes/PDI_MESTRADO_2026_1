@@ -1,0 +1,47 @@
+function g = LinearSFilter(f, w)
+
+% Converte para double
+f = double(f);
+
+% Escala a imagem para [0,1]
+f_min = min(f(:));
+f_max = max(f(:));
+
+if f_max > f_min
+    f = (f - f_min) / (f_max - f_min);
+else
+    f = zeros(size(f));
+end
+
+% Converte a mascara para double
+w = double(w);
+
+[M, N] = size(f);
+[m, n] = size(w);
+
+% Quantidade de padding
+r = floor(m/2);
+c = floor(n/2);
+
+% Aplica padding replicado
+fp = imagePad(f, r, c, 'replicate');
+
+% Inicializa imagem de saída
+g = zeros(M, N);
+
+% Filtragem espacial linear
+for x = 1:M
+    for y = 1:N
+
+        soma = 0;
+
+        for i = 1:m
+            for j = 1:n
+                soma = soma + w(i,j) * fp(x+i-1, y+j-1);
+            end
+        end
+
+        g(x,y) = soma;
+    end
+end
+end
